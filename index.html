@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Minha Coleção</title>
+    <style>
+        :root {
+            --color-background: rgba(252, 252, 249, 1);
+            --color-text: rgba(19, 52, 59, 1);
+            --color-primary: rgba(33, 128, 141, 1);
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-error: rgba(192, 21, 47, 1);
+            --color-success: rgba(33, 128, 141, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--color-background);
+            color: var(--color-text);
+            padding: 0;
+            margin: 0;
+        }
+
+        .app-header {
+            background: var(--color-primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .collection-selector {
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 90%;
+            max-width: 300px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--color-border);
+            background: white;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--color-text);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-panel {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input, select, textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            background: white;
+        }
+
+        input[type="text"],
+        input[type="search"],
+        select,
+        textarea {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: rgba(33, 128, 141, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(33, 128, 141, 0.1);
+        }
+
+        .btn-danger {
+            background: var(--color-error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: rgba(192, 21, 47, 0.9);
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .item-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .item-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-4px);
+        }
+
+        .item-cover {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+
+        .item-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-info {
+            padding: 12px;
+        }
+
+        .item-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: var(--color-text);
+        }
+
+        .item-artist {
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+            margin-bottom: 8px;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            background: var(--color-primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .item-actions button {
+            flex: 1;
+            padding: 6px;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--color-text);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-box {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+            margin-top: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+
+        .message.success {
+            background: rgba(33, 128, 141, 0.1);
+            color: var(--color-success);
+            border: 1px solid var(--color-success);
+        }
+
+        .message.error {
+            background: rgba(192, 21, 47, 0.1);
+            color: var(--color-error);
+            border: 1px solid var(--color-error);
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .collection-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .app-header h1 {
+                font-size: 20px;
+            }
+
+            .nav-tabs {
+                justify-content: space-around;
+            }
+
+            .nav-tab {
+                flex-basis: auto;
+                min-width: 70px;
+                padding: 10px 12px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(0,0,0,0.5);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1>📚 Minha Coleção</h1>
+        <select id="collection-selector" class="collection-selector"></select>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="nav-tab active" data-tab="biblioteca">📖 Biblioteca</button>
+        <button class="nav-tab" data-tab="adicionar">➕ Adicionar</button>
+        <button class="nav-tab" data-tab="colecoes">📚 Coleções</button>
+        <button class="nav-tab" data-tab="configuracoes">⚙️ Configurações</button>
+    </div>
+
+    <div id="biblioteca" class="tab-panel active">
+        <div class="search-box">
+            <input type="search" id="search-input" placeholder="Buscar...">
+            <select id="genre-filter"><option value="">Todos os gêneros</option></select>
+            <select id="sort-filter">
+                <option value="recent">Recentes</option>
+                <option value="alpha">A-Z</option>
+                <option value="genre">Gênero</option>
+            </select>
+        </div>
+        <div id="item-count" style="font-size: 14px; color: rgba(0,0,0,0.6); margin-bottom: 16px;"></div>
+        <div id="collection-container" class="collection-grid"></div>
+    </div>
+
+    <div id="adicionar" class="tab-panel">
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="startScanning()">📱 Escanear Código de Barras</button>
+            <button class="btn btn-secondary" style="flex: 1;" onclick="showManualForm()">✍️ Adicionar Manualmente</button>
+        </div>
+        
+        <div id="scanner-container" class="hidden">
+            <video id="scanner-video" style="width: 100%; max-width: 400px; margin-bottom: 10px; border-radius: 6px;"></video>
+            <button class="btn btn-danger" style="width: 100%;" onclick="stopScanning()">Parar Escaneamento</button>
+        </div>
+
+        <form id="item-form" class="hidden">
+            <div class="form-group">
+                <label>Código de Barras (opcional)</label>
+                <input type="text" id="item-barcode" placeholder="5060255789019">
+            </div>
+
+            <div class="form-group">
+                <label>Título *</label>
+                <input type="text" id="item-title" required placeholder="Ex: Pink Floyd - The Wall">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Artista/Diretor</label>
+                    <input type="text" id="item-artist" placeholder="Ex: Pink Floyd">
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="item-category" onchange="updateGenres()">
+                        <option value="Música">Música</option>
+                        <option value="Filme">Filme</option>
+                        <option value="Série">Série</option>
+                        <option value="Livro">Livro</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Gênero</label>
+                    <select id="item-genre"></select>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade de Discos</label>
+                    <input type="number" id="item-disc-count" value="1" min="1">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>URL da Capa</label>
+                <input type="text" id="item-cover" placeholder="https://exemplo.com/capa.jpg">
+            </div>
+
+            <div class="form-group">
+                <label>Notas/Detalhes</label>
+                <textarea id="item-notes" rows="3" placeholder="Ex: Disco 1 e 2, Edição limitada..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Salvar</button>
+                <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="cancelForm()">❌ Cancelar</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="colecoes" class="tab-panel">
+        <button class="btn btn-primary" onclick="showNewCollectionForm()" style="width: 100%; margin-bottom: 20px;">➕ Nova Coleção</button>
+        <div id="collections-list"></div>
+
+        <div id="new-collection-modal" class="modal">
+            <div class="modal-content">
+                <h2>Nova Coleção</h2>
+                <form onsubmit="createCollection(event)">
+                    <div class="form-group">
+                        <label>Nome da Coleção *</label>
+                        <input type="text" id="new-collection-name" required placeholder="Ex: Fitas VHS">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="new-collection-type">
+                            <option value="CD">📀 CD</option>
+                            <option value="Vinil">🎛️ Vinil</option>
+                            <option value="DVD/Blu-ray">🎬 DVD/Blu-ray</option>
+                            <option value="Livros">📚 Livros</option>
+                            <option value="Outro">📦 Outro</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">Criar</button>
+                        <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeNewCollectionModal()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="configuracoes" class="tab-panel">
+        <div class="card">
+            <h3>📊 Estatísticas</h3>
+            <div class="stats" style="margin-top: 16px;" id="stats-container"></div>
+        </div>
+
+        <div class="card">
+            <h3>💾 Backup & Sincronização</h3>
+            <p>Exporte sua coleção completa em JSON para backup seguro.</p>
+            <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="exportData()">📥 Exportar JSON</button>
+                <button class="btn btn-secondary" onclick="triggerImport()">📤 Importar JSON</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>ℹ️ Sobre</h3>
+            <p><strong>Coleção Scanner v1.0</strong></p>
+            <p>App para catalogar suas coleções de CDs, Vinis, DVDs, Livros e mais.</p>
+            <p style="font-size: 12px; color: rgba(0,0,0,0.6); margin-top: 12px;">
+                ✅ Funciona 100% offline<br>
+                ✅ Dados privados no seu navegador<br>
+                ✅ Sem servidor, sem rastreamento<br>
+                ✅ Backup e export fácil
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let collections = [];
+        let activeCollectionId = null;
+
+        const genresByCategory = {
+            'Música': ['Rock', 'Pop', 'Clássico', 'Jazz', 'Hip-Hop', 'Eletrônico', 'Forró', 'Sertanejo', 'MPB', 'Outro'],
+            'Filme': ['Ação', 'Comédia', 'Drama', 'Ficção Científica', 'Horror', 'Romance', 'Aventura', 'Documentário', 'Outro'],
+            'Série': ['Drama', 'Comédia', 'Ficção Científica', 'Documentário', 'Ação', 'Suspense', 'Outro'],
+            'Livro': ['Ficção', 'Não-ficção', 'Romance', 'Suspense', 'Ficção Científica', 'Histórico', 'Infantil', 'Técnico', 'Outro'],
+            'Outro': ['Outro']
+        };
+
+        function init() {
+            console.log('Iniciando app...');
+            loadCollections();
+            setupEventListeners();
+            renderCollectionSelector();
+            renderLibrary();
+            updateGenres();
+            renderCollectionsList();
+            updateStats();
+            console.log('App inicializado!');
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    switchTab(this.dataset.tab, this);
+                });
+            });
+
+            document.getElementById('item-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveItem();
+            });
+
+            document.getElementById('search-input').addEventListener('input', renderLibrary);
+            document.getElementById('genre-filter').addEventListener('change', renderLibrary);
+            document.getElementById('sort-filter').addEventListener('change', renderLibrary);
+            document.getElementById('collection-selector').addEventListener('change', (e) => {
+                activeCollectionId = e.target.value;
+                saveCollections();
+                renderLibrary();
+                updateGenres();
+                updateStats();
+            });
+        }
+
+        function switchTab(tabName, tabElement) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
+            const panel = document.getElementById(tabName);
+            if (panel) {
+                panel.classList.add('active');
+            }
+            
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
+        }
+
+        function loadCollections() {
+            try {
+                const data = localStorage.getItem('collections');
+                if (data) {
+                    collections = JSON.parse(data);
+                    activeCollectionId = localStorage.getItem('activeCollectionId');
+                    console.log('Coleções carregadas:', collections.length);
+                } else {
+                    createDefaultCollections();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar:', error);
+                createDefaultCollections();
+            }
+        }
+
+        function createDefaultCollections() {
+            collections = [
+                { id: 'cd_1', name: 'CD', type: 'CD', icon: '📀', items: [], createdDate: new Date().toISOString() },
+                { id: 'vinyl_1', name: 'Vinil', type: 'Vinil', icon: '🎛️', items: [], createdDate: new Date().toISOString() },
+                { id: 'dvd_1', name: 'DVD/Blu-ray', type: 'DVD/Blu-ray', icon: '🎬', items: [], createdDate: new Date().toISOString() },
+                { id: 'books_1', name: 'Livros', type: 'Livros', icon: '📚', items: [], createdDate: new Date().toISOString() }
+            ];
+            activeCollectionId = 'cd_1';
+            saveCollections();
+            console.log('Coleções padrão criadas');
+        }
+
+        function saveCollections() {
+            try {
+                localStorage.setItem('collections', JSON.stringify(collections));
+                localStorage.setItem('activeCollectionId', activeCollectionId);
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+            }
+        }
+
+        function getActiveCollection() {
+            return collections.find(c => c.id === activeCollectionId);
+        }
+
+        function renderCollectionSelector() {
+            const selector = document.getElementById('collection-selector');
+            selector.innerHTML = '';
+            collections.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c.id;
+                option.textContent = `${c.icon} ${c.name}`;
+                option.selected = c.id === activeCollectionId;
+                selector.appendChild(option);
+            });
+        }
+
+        function renderLibrary() {
+            const collection = getActiveCollection();
+            if (!collection) return;
+
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const genreFilter = document.getElementById('genre-filter').value;
+            const sortBy = document.getElementById('sort-filter').value;
+
+            let items = collection.items.filter(item => {
+                const matchesSearch = item.title.toLowerCase().includes(searchTerm) ||
+                                    (item.artist && item.artist.toLowerCase().includes(searchTerm)) ||
+                                    (item.barcode && item.barcode.includes(searchTerm));
+                const matchesGenre = !genreFilter || item.genre === genreFilter;
+                return matchesSearch && matchesGenre;
+            });
+
+            if (sortBy === 'alpha') items.sort((a, b) => a.title.localeCompare(b.title));
+            if (sortBy === 'genre') items.sort((a, b) => (a.genre || '').localeCompare(b.genre || ''));
+            if (sortBy === 'recent') items.reverse();
+
+            const container = document.getElementById('collection-container');
+            document.getElementById('item-count').textContent = `${items.length} item(ns)`;
+
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Nenhum item encontrado</p></div>';
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-cover" ${item.coverUrl ? `style="background-image: url('${item.coverUrl}'); background-size: cover;"` : ''}>
+                        ${!item.coverUrl ? '📀' : ''}
+                    </div>
+                    <div class="item-info">
+                        <div class="item-title">${escapeHtml(item.title)}</div>
+                        ${item.artist ? `<div class="item-artist">${escapeHtml(item.artist)}</div>` : ''}
+                        <div class="item-meta">
+                            <span class="badge">${item.genre || 'Sem gênero'}</span>
+                            ${item.discCount > 1 ? `<span class="badge">${item.discCount} discos</span>` : ''}
+                        </div>
+                        ${item.notes ? `<div style="font-size: 11px; color: rgba(0,0,0,0.5); margin-bottom: 8px;">${escapeHtml(item.notes)}</div>` : ''}
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-secondary" onclick="editItem('${item.id}')" style="font-size: 12px;">✏️</button>
+                        <button class="btn btn-danger" onclick="deleteItem('${item.id}')" style="font-size: 12px;">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateGenres() {
+            const category = document.getElementById('item-category').value;
+            const genres = genresByCategory[category] || ['Outro'];
+            const genreSelect = document.getElementById('item-genre');
+            genreSelect.innerHTML = genres.map(g => `<option value="${g}">${g}</option>`).join('');
+
+            const genreFilter = document.getElementById('genre-filter');
+            genreFilter.innerHTML = '<option value="">Todos os gêneros</option>';
+            genres.forEach(g => {
+                genreFilter.innerHTML += `<option value="${g}">${g}</option>`;
+            });
+        }
+
+        function showManualForm() {
+            document.getElementById('item-form').classList.remove('hidden');
+            document.getElementById('scanner-container').classList.add('hidden');
+            document.getElementById('item-form').reset();
+        }
+
+        function cancelForm() {
+            document.getElementById('item-form').classList.add('hidden');
+            document.getElementById('scanner-container').classList.add('hidden');
+        }
+
+        function saveItem() {
+            const collection = getActiveCollection();
+            if (!collection) return;
+
+            const item = {
+                id: Math.random().toString(36).substr(2, 9),
+                barcode: document.getElementById('item-barcode').value || '',
+                title: document.getElementById('item-title').value,
+                artist: document.getElementById('item-artist').value || '',
+                category: document.getElementById('item-category').value,
+                genre: document.getElementById('item-genre').value,
+                coverUrl: document.getElementById('item-cover').value || '',
+                notes: document.getElementById('item-notes').value || '',
+                discCount: parseInt(document.getElementById('item-disc-count').value) || 1,
+                addedDate: new Date().toISOString().split('T')[0]
+            };
+
+            collection.items.push(item);
+            saveCollections();
+            cancelForm();
+            renderLibrary();
+            updateStats();
+            showMessage('✅ Item adicionado com sucesso!', 'success');
+        }
+
+        function editItem(itemId) {
+            const collection = getActiveCollection();
+            const item = collection.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            document.getElementById('item-barcode').value = item.barcode;
+            document.getElementById('item-title').value = item.title;
+            document.getElementById('item-artist').value = item.artist;
+            document.getElementById('item-category').value = item.category;
+            updateGenres();
+            document.getElementById('item-genre').value = item.genre;
+            document.getElementById('item-cover').value = item.coverUrl;
+            document.getElementById('item-notes').value = item.notes;
+            document.getElementById('item-disc-count').value = item.discCount;
+
+            collection.items = collection.items.filter(i => i.id !== itemId);
+            saveCollections();
+
+            showManualForm();
+            window.scrollTo(0, 0);
+        }
+
+        function deleteItem(itemId) {
+            if (confirm('Tem certeza que deseja deletar?')) {
+                const collection = getActiveCollection();
+                collection.items = collection.items.filter(i => i.id !== itemId);
+                saveCollections();
+                renderLibrary();
+                updateStats();
+            }
+        }
+
+        function renderCollectionsList() {
+            const container = document.getElementById('collections-list');
+            container.innerHTML = collections.map(c => `
+                <div class="card">
+                    <h3>${c.icon} ${c.name}</h3>
+                    <p>${c.items.length} items</p>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="editCollection('${c.id}')" style="font-size: 12px;">✏️ Editar</button>
+                        <button class="btn btn-danger" onclick="deleteCollection('${c.id}')" style="font-size: 12px;">🗑️ Deletar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showNewCollectionForm() {
+            document.getElementById('new-collection-modal').classList.add('active');
+        }
+
+        function closeNewCollectionModal() {
+            document.getElementById('new-collection-modal').classList.remove('active');
+        }
+
+        function createCollection(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-collection-name').value;
+            const type = document.getElementById('new-collection-type').value;
+
+            const icons = {
+                'CD': '📀',
+                'Vinil': '🎛️',
+                'DVD/Blu-ray': '🎬',
+                'Livros': '📚',
+                'Outro': '📦'
+            };
+
+            const collection = {
+                id: 'col_' + Math.random().toString(36).substr(2, 9),
+                name: name,
+                type: type,
+                icon: icons[type] || '📦',
+                items: [],
+                createdDate: new Date().toISOString()
+            };
+
+            collections.push(collection);
+            activeCollectionId = collection.id;
+            saveCollections();
+            renderCollectionSelector();
+            renderCollectionsList();
+            renderLibrary();
+            closeNewCollectionModal();
+            document.getElementById('new-collection-name').value = '';
+            showMessage('✅ Coleção criada!', 'success');
+        }
+
+        function editCollection(collectionId) {
+            const name = prompt('Novo nome:');
+            if (name) {
+                const collection = collections.find(c => c.id === collectionId);
+                collection.name = name;
+                saveCollections();
+                renderCollectionsList();
+                renderCollectionSelector();
+            }
+        }
+
+        function deleteCollection(collectionId) {
+            const collection = collections.find(c => c.id === collectionId);
+            if (collection.items.length > 0 && !confirm(`${collection.name} tem ${collection.items.length} items. Deletar mesmo assim?`)) {
+                return;
+            }
+            collections = collections.filter(c => c.id !== collectionId);
+            if (activeCollectionId === collectionId) {
+                activeCollectionId = collections[0]?.id;
+            }
+            saveCollections();
+            renderCollectionsList();
+            renderCollectionSelector();
+            renderLibrary();
+        }
+
+        function startScanning() {
+            alert('Recurso de scanner requer biblioteca externa. Use "Adicionar Manualmente" por enquanto.');
+        }
+
+        function stopScanning() {
+            document.getElementById('scanner-container').classList.add('hidden');
+        }
+
+        function exportData() {
+            const data = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                collections: collections
+            };
+
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `colecao-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showMessage('✅ Backup exportado!', 'success');
+        }
+
+        function triggerImport() {
+            document.getElementById('import-file').click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    collections = data.collections || [];
+                    activeCollectionId = collections[0]?.id;
+                    saveCollections();
+                    init();
+                    showMessage('✅ Backup importado com sucesso!', 'success');
+                } catch (err) {
+                    showMessage('❌ Erro ao importar arquivo', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function updateStats() {
+            const collection = getActiveCollection();
+            if (!collection) return;
+
+            const stats = {
+                total: collection.items.length,
+                byGenre: {}
+            };
+
+            collection.items.forEach(item => {
+                stats.byGenre[item.genre] = (stats.byGenre[item.genre] || 0) + 1;
+            });
+
+            const container = document.getElementById('stats-container');
+            container.innerHTML = `
+                <div class="stat-box">
+                    <div class="stat-number">${stats.total}</div>
+                    <div class="stat-label">Total de Items</div>
+                </div>
+                ${Object.entries(stats.byGenre).map(([genre, count]) => `
+                    <div class="stat-box">
+                        <div class="stat-number">${count}</div>
+                        <div class="stat-label">${genre}</div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function showMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.textContent = text;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Iniciar quando página carregar
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Se já estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
